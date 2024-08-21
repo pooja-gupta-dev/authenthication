@@ -53,7 +53,6 @@ dependencies:
   flutter_local_notifications: ^17.2.1+2
   permission_handler: ^10.2.0
   firebase_dynamic_links:
-  share_plus:
   google_maps_flutter:
   location: any
   http:
@@ -68,12 +67,15 @@ dependencies:
   like_button:
   favorite_button:
   connectivity:
-  sqflite:
+  sqflite: any
   path_provider:
-  images_picker:
-
-
-
+  camera:
+  video_uploader:
+  flutter_spinkit:
+  video_thumbnail: any
+  camera_android:
+  chewie: ^1.8.3
+  share_plus:
 
 
 dev_dependencies:

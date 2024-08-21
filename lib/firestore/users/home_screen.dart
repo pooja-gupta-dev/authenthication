@@ -40,10 +40,11 @@
 //     );
 //   }
 // }
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required User user});
 
   @override
   Widget build(BuildContext context) {

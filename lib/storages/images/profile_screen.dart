@@ -1,382 +1,229 @@
-// // import 'dart:ffi';
-// // import 'dart:io';
-// //
-// // import 'package:cloud_firestore/cloud_firestore.dart';
-// // import 'package:firebase_storage/firebase_storage.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:fluttertoast/fluttertoast.dart';
-// // import 'package:get/get.dart';
-// // import 'package:image_picker/image_picker.dart';
-// //
-// // class profileScreen extends StatefulWidget {
-// //   const profileScreen({super.key});
-// //
-// //   @override
-// //   State<profileScreen> createState() => _profileScreenState();
-// // }
-// //
-// // class _profileScreenState extends State<profileScreen> {
-// //
-// //   XFile? imageFile;
-// //   final TextEditingController nameController=TextEditingController();
-// //   final TextEditingController emailController=TextEditingController();
-// //   final TextEditingController phoneController=TextEditingController();
-// //   final TextEditingController ageController=TextEditingController();
-// //   bool isLoading = false;
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Scaffold(
-// //       backgroundColor: Colors.cyan,
-// //       appBar: AppBar(title: Text("PROFILE"),
-// //       ),
-// //       body: isLoading?Center(
-// //         child: CircularProgressIndicator(),):SingleChildScrollView(
-// //         child: Padding(
-// //           padding: EdgeInsets.all(20),
-// //           child: Column(
-// //             children: [
-// //               GestureDetector(
-// //                 onTap: takeImage,
-// //                 child:CircleAvatar(
-// //                   radius: 50,
-// //                   backgroundColor: Colors.cyan,
-// //                   backgroundImage:imageFile==null?null :FileImage(File(imageFile?.path??"")),
-// //                   child: imageFile==null?Icon(Icons.photo_camera_back,size: 50,color: Colors.white,):null
-// //                 ),
-// //               ),
-// //               SizedBox(height: 30,),
-// //               TextField(
-// //                 controller: nameController,
-// //                 decoration: InputDecoration(
-// //
-// //                 ),
-// //               ),
-// //               SizedBox(height: 30,),
-// //               TextField(
-// //                 controller: emailController,
-// //                 decoration: InputDecoration(
-// //
-// //                 ),
-// //               ),
-// //               SizedBox(height: 30,),
-// //               TextField(
-// //                 controller: phoneController,
-// //                 decoration: InputDecoration(
-// //
-// //                 ),
-// //               ),
-// //               // MaterialButton(
-// //               //   shape: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-// //               //     onPressed: (){
-// //               //   Text("image");
-// //               // }),
-// //               // MaterialButton(
-// //               //      shape: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-// //               //
-// //               //     onPressed: (){
-// //               //       Text(" uploaded");
-// //               //     }),
-// //               ElevatedButton(onPressed: (){
-// //
-// //               }, child: Text("image"))
-// //             ],
-// //           ),
-// //         )
-// //         ),
-// //
-// //     );
-// //   }
-// //   takeImage()async{
-// //     var imagePicker = ImagePicker();
-// //     var image = await imagePicker.pickImage(source: ImageSource.gallery);
-// //     setState(() {
-// //       imageFile = image!;
-// //     });
-// //   }
-// //   uploadImage(){
-// //     if(imageFile==null||nameController.text.isEmpty||emailController.text.isEmpty||phoneController.text.isEmpty||ageController.text.isEmpty){
-// //       Fluttertoast.showToast(msg: "pleace complete all firlds and upload image");
-// //       return;
-// //     }
-// //     setState(() {
-// //       isLoading = true;
-// //     });
-// //     try {
-// //       var storage =FirebaseFirestore.instance;
-// //       var styorageRef =storage.ref("images").child(Image)
-// //
-// //
-// //     }
-// //   }
-// //
-// // //     var  storage = FirebaseStorage.instance;
-// // //     storage.ref("profileImage").child(imageFile?.name??"").putFile(File(imageFile?.path??"")).then ((value)async{
-// // //    var imageUrl= await value.ref.getDownloadURL();
-// // //    print("imageUrl");
-// // //    var docId =FirebaseFirestore.instance.collection("profile").doc().id;
-// // //    FirebaseFirestore.instance.collection("profile").add({"imageUrl":imageUrl});
-// // //    Fluttertoast.showToast(msg: "Image uploaded");
-// // //     });
-// // //   }
-// // // }
-// //
-//
-// import 'dart:io';
-//
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
-// import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:get/get.dart';
-// import 'package:image_picker/image_picker.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 //
-// class profileScreen extends StatefulWidget {
-//   const profileScreen({super.key});
+// import '../../instagram_project/controllers/users_controller.dart';
 //
+// class ProfileScreen extends StatefulWidget {
 //   @override
-//   State<profileScreen> createState() => _profileScreenState();
+//   State<ProfileScreen> createState() => _ProfileScreenState();
 // }
 //
-// class _profileScreenState extends State<profileScreen> {
-//   XFile? imageFile;
-//   final TextEditingController nameController = TextEditingController();
-//   final TextEditingController emailController = TextEditingController();
-//   final TextEditingController phoneController = TextEditingController();
-//   bool isLoading = false;
+// class _ProfileScreenState extends State<ProfileScreen> {
+//   final UserController userController = Get.put(UserController());
+//   final AuthController authController = Get.put(AuthController());
+//
+//   Future<int> _getVideoCount(String userId) async {
+//     try {
+//       final videoSnapshot = await FirebaseFirestore.instance
+//           .collection('videos')
+//           .where('userId', isEqualTo: userId)
+//           .get();
+//       return videoSnapshot.docs.length;
+//     } catch (e) {
+//       print("Error fetching video count: $e");
+//       return 0;
+//     }
+//   }
+//
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//         appBar: AppBar(title: Center(child: Text("PROFILE")),
-//         ),
-//         body: isLoading ? Center(child: CircularProgressIndicator(),):SingleChildScrollView(
-//           child: Padding(padding: EdgeInsets.all(19.0),
-//             child: Column(
-//               children: [
-//                 GestureDetector(
-//                   onTap: takeImage,
-//                   child: CircleAvatar(
-//                     radius: 60,
-//                     backgroundColor: Colors.teal,
-//                     backgroundImage: imageFile == null? null : FileImage(File(imageFile?.path??"")),
-//                     child: imageFile== null? Icon(Icons.photo_camera_back,size: 50,color: Colors.white,):null,
+//       appBar: AppBar(
+//         title: Text('Profile'),
+//         backgroundColor: Colors.white,
+//         elevation: 0,
+//         actions: [
+//           PopupMenuButton<String>(
+//             onSelected: (value) {
+//               if (value == 'logout') {
+//                 FirebaseAuth.instance.signOut();
+//                 Get.offAll(()=>LoginScreen());
+//               }
+//             },
+//             itemBuilder: (BuildContext context) {
+//               return {'logout'}.map((String choice) {
+//                 return PopupMenuItem<String>(
+//                   value: choice,
+//                   child: Text(choice),
+//                 );
+//               }).toList();
+//             },
+//           ),
+//         ],
+//       ),
+//       body: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Container(
+//             padding: EdgeInsets.all(16.0),
+//             decoration: BoxDecoration(
+//               border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+//             ),
+//             child: Obx(() {
+//               return Row(
+//                 children: [
+//                   CircleAvatar(
+//                     radius: 50,
+//                     backgroundImage: userController.userData.imageUrl != null
+//                         ? NetworkImage(userController.userData.imageUrl!)
+//                         : null,
+//                     child: userController.user.value.imageUrl == null
+//                         ? Icon(Icons.person, size: 50, color: Colors.grey)
+//                         : null,
 //                   ),
-//                 ),
-//                 SizedBox(height: 20,),
-//                 TextField(controller: nameController,
-//                   decoration: InputDecoration(labelText: "name"),
-//                 ),
-//                 SizedBox(height: 20,),
-//                 TextField(controller: emailController,
-//                   decoration: InputDecoration(labelText: "email"),
-//                 ),
-//                 SizedBox(height: 20,),
-//                 TextField(controller: phoneController,
-//                   decoration: InputDecoration(labelText: "phone"),
-//                 ),
-//                 SizedBox(height: 20,),
-//                 ElevatedButton(
-//                     onPressed: uploadImage,
-//                     child: Text("Submit"))
-//               ],
-//
+//                   SizedBox(width: 16),
+//                   Expanded(
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(
+//                           userController.userData.name ?? 'Username',
+//                           style: TextStyle(
+//                             fontWeight: FontWeight.bold,
+//                             fontSize: 24,
+//                           ),
+//                         ),
+//                         SizedBox(height: 10),
+//                         Row(
+//                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                           children: [
+//                             _buildProfileStat('Posts', "0"),
+//                             _buildProfileStat('Followers', userController.userData.followers?.length.toString() ?? "0"),
+//                             _buildProfileStat('Following',  userController.userData.following?.length.toString() ?? "0"),
+//                           ],
+//                         ),
+//                         SizedBox(height: 16),
+//                         Row(
+//                           mainAxisAlignment: MainAxisAlignment.spaceAround,
+//                           children: [
+//                             OutlinedButton(
+//                               onPressed: () {
+//                                 Get.to(() => EditProfileScreen());
+//                               },
+//                               style: OutlinedButton.styleFrom(
+//                                 shape: RoundedRectangleBorder(
+//                                   borderRadius: BorderRadius.circular(30),
+//                                 ),
+//                               ),
+//                               child: Text('Edit Profile'),
+//                             ),
+//                             OutlinedButton(
+//                               onPressed: () {
+//                                 Get.to(() => VideoUploadScreen(
+//                                   onVideoUploaded: _refreshProfileScreen,
+//                                 ));
+//                               },
+//                               style: OutlinedButton.styleFrom(
+//                                 shape: RoundedRectangleBorder(
+//                                   borderRadius: BorderRadius.circular(30),
+//                                 ),
+//                               ),
+//                               child: Text('Add Video Post'),
+//                             ),
+//                           ],
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ],
+//               );
+//             }
 //             ),
 //           ),
-//         )
+//           // Post Grid
+//           Expanded(
+//             child: StreamBuilder<QuerySnapshot>(
+//               stream: FirebaseFirestore.instance
+//                   .collection('videos')
+//                   .where('userId', isEqualTo: userController.user.value.id)
+//                   .snapshots(),
+//               builder: (context, snapshot) {
+//                 // if (!snapshot.hasData) {
+//                 //   return Center(child: CircularProgressIndicator());
+//                 // }
+//
+//                 final videoDocs = snapshot.data?.docs ?? [];
+//
+//                 if (videoDocs.isEmpty) {
+//                   return Center(child: Text('No videos uploaded yet.'));
+//                 }
+//
+//                 return GridView.builder(
+//                   padding: EdgeInsets.all(8.0),
+//                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                     crossAxisCount: 3,
+//                     crossAxisSpacing: 4.0,
+//                     mainAxisSpacing: 4.0,
+//                   ),
+//                   itemCount: videoDocs.length,
+//                   itemBuilder: (context, index) {
+//                     final videoData = videoDocs[index];
+//                     final videoUrl = videoData['videoUrl'];
+//                     return GestureDetector(
+//                       onTap: () {
+//                         Get.to(() => VideoPlaybackScreen(videoUrl: videoUrl));
+//                       },
+//                       child: Container(
+//                         color: Colors.grey[300],
+//                         child: Center(
+//                           child: Icon(Icons.play_circle_outline,
+//                               size: 50, color: Colors.black),
+//                         ),
+//                       ),
+//                     );
+//                   },
+//                 );
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//       // body: FutureBuilder<int>(
+//       //     future: _getVideoCount(user.id!),
+//       //     builder: (context, videoCountSnapshot) {
+//       //       if (videoCountSnapshot.connectionState == ConnectionState.waiting) {
+//       //         return Center(child: CircularProgressIndicator());
+//       //       }
+//       //
+//       //       if (videoCountSnapshot.hasError) {
+//       //         return Center(child: Text('Error fetching video count.'));
+//       //       }
+//       //
+//       //       final videoCount = videoCountSnapshot.data ?? 0;
+//       //
+//       //       return ;
+//       //     },
+//       //   );
 //     );
 //   }
-//   takeImage()async{
-//     try {
-//       var imagePicker = ImagePicker();
-//       var image = await imagePicker.pickImage(source: ImageSource.gallery);
-//       setState(() {
-//         imageFile = image!;
-//       });
-//     }catch(e){
-//       Fluttertoast.showToast(msg: "Error picking image$e");
-//     }
+//
+//   Widget _buildProfileStat(String title, String count) {
+//     return Column(
+//       children: [
+//         Text(
+//           count,
+//           style: TextStyle(
+//             fontSize: 18,
+//             fontWeight: FontWeight.bold,
+//           ),
+//         ),
+//         SizedBox(height: 4),
+//         Text(
+//           title,
+//           style: TextStyle(
+//             fontSize: 16,
+//             color: Colors.grey,
+//           ),
+//         ),
+//       ],
+//     );
 //   }
-//   var imageUrl = "";
 //
-//   uploadImage()async{
-//     if(imageFile == null || nameController.text.isEmpty||emailController.text.isEmpty||phoneController.text.isEmpty){
-//       Fluttertoast.showToast(msg: "please complete all fields and upload images");
-//       return;
-//     }
-//
+//   _refreshProfileScreen() {
 //     setState(() {
-//       isLoading = true;
+//
 //     });
-//     try{
-//       var storage =FirebaseStorage.instance;
-//       var storageRef = storage.ref("image").child(imageFile?.name??"");
-//       storageRef.putFile(File(imageFile!.path)).then((p0)async{
-//         imageUrl = await p0.ref.getDownloadURL();
-//         setState(() {
-//
-//         });
-//       });
-//
-//       var firestor = FirebaseFirestore.instance;
-//       await firestor.collection("users").add({
-//         "name": nameController.text,
-//         "email":emailController.text,
-//         "phone":phoneController.text,
-//         "imageUrl":imageUrl
-//       });
-//       Fluttertoast.showToast(msg: "data Upload successfully");
-//     } catch(e){
-//       Fluttertoast.showToast(msg: "Error Uploading data$e");
-//     }finally{
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
 //   }
-//
 // }
-import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
-
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  XFile? imageFile;
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  bool isLoading = false;
-  String? uploadedImageUrl;
-  String? uploadedName;
-  String? uploadedEmail;
-  String? uploadedPhone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Profile"),
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: takeImage,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.blue,
-                  backgroundImage: imageFile == null
-                      ? null
-                      : FileImage(File(imageFile!.path)),
-                  child: imageFile == null
-                      ? const Icon(Icons.camera_alt,
-                      size: 50, color: Colors.white)
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Name"),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: "Phone"),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: uploadData,
-                child: const Text("Submit"),
-              ),
-              const SizedBox(height: 20),
-              if (uploadedImageUrl != null) ...[
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: NetworkImage(uploadedImageUrl!),
-                ),
-                const SizedBox(height: 20),
-                Text('Name: $uploadedName'),
-                Text('Email: $uploadedEmail'),
-                Text('Phone: $uploadedPhone'),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> takeImage() async {
-    try {
-      var imagePicker = ImagePicker();
-      var image = await imagePicker.pickImage(source: ImageSource.gallery);
-      setState(() {
-        imageFile = image;
-      });
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Error picking image: $e");
-    }
-  }
-
-  Future<void> uploadData() async {
-    if (imageFile == null || nameController.text.isEmpty || emailController.text.isEmpty || phoneController.text.isEmpty) {
-      Fluttertoast.showToast(msg: "Please complete all fields and upload an image");
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      // Upload image to Firebase Storage
-      var storage = FirebaseStorage.instance;
-      var storageRef = storage.ref("Images").child(imageFile?.name??"");
-      var uploadTask = storageRef.putFile(File(imageFile!.path));
-      await uploadTask;
-      String imageUrl = await storageRef.getDownloadURL();
-
-      // Store data in Firestore
-      var firestore = FirebaseFirestore.instance;
-      await firestore.collection("users").add({
-        "name": nameController.text,
-        "email": emailController.text,
-        "phone": phoneController.text,
-        "imageUrl": imageUrl,
-
-      });
-
-      // Update state to display uploaded data
-      setState(() {
-        uploadedImageUrl = imageUrl;
-        uploadedName = nameController.text;
-        uploadedEmail = emailController.text;
-        uploadedPhone = phoneController.text;
-      });
-
-      Fluttertoast.showToast(msg: "Data uploaded successfully");
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Error uploading data: $e");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-}

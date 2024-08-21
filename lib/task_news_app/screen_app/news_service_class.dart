@@ -1,7 +1,7 @@
 // // import 'dart:convert';
 // // import 'package:http/http.dart' as http;
 // //
-// // import '../model.dart';
+// // import '../insta_model.dart';
 // //
 // // class NewsServices {
 // //   final String url = "https://newsapi.org/v2/top-headlines";
@@ -37,7 +37,7 @@
 // import 'dart:convert';
 // import 'package:flutter/cupertino.dart';
 // import 'package:http/http.dart' as http;
-// import '../model.dart';
+// import '../insta_model.dart';
 //
 //
 // class NewsServiceClass with ChangeNotifier {
