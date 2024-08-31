@@ -112,7 +112,7 @@ import 'package:get/get.dart';
 import '../controllers/insta_auth_controller.dart';
 import '../controllers/mixin_class.dart';
 
-class InstaLoginScreen extends StatelessWidget with ValidationMixin {
+class InstaLoginScreen extends StatelessWidget with ValidationMixin, ValidationMixin1 {
   final InstaAuthController authController = Get.find<InstaAuthController>();
 
   final _emailController = TextEditingController();
